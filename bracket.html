@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Celestial Cup Bracket</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Orbitron', sans-serif;
+            background: #000;
+            color: #fff;
+            overflow-x: hidden;
+            min-height: 100vh;
+            width: 100vw;
+            position: relative;
+        }
+
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, #1a0033 0%, #000 100%);
+            z-index: 0;
+        }
+
+        .stars {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(2px 2px at 20% 30%, cyan, transparent),
+                radial-gradient(2px 2px at 60% 70%, magenta, transparent),
+                radial-gradient(1px 1px at 50% 50%, yellow, transparent),
+                radial-gradient(1px 1px at 80% 10%, cyan, transparent),
+                radial-gradient(2px 2px at 90% 60%, magenta, transparent);
+            background-size: 200% 200%;
+            animation: twinkle 4s infinite;
+            z-index: 0;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            padding: 3vh 2vw 2vh;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3vh;
+        }
+
+        .main-title {
+            font-size: 4vw;
+            font-weight: 900;
+            background: linear-gradient(90deg, #00f5ff, #0080ff, #ff00ff, #ff0080, #ff00ff, #0080ff, #00f5ff);
+            background-size: 200% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradient-shift 3s ease infinite;
+            text-shadow: 0 0 40px rgba(0, 245, 255, 0.5),
+                         0 0 80px rgba(255, 0, 255, 0.3);
+            letter-spacing: 0.5vw;
+            margin-bottom: 0.5vh;
+        }
+
+        @keyframes gradient-shift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .subtitle {
+            font-size: 1.5vw;
+            color: #ff0080;
+            text-transform: uppercase;
+            letter-spacing: 0.3vw;
+            text-shadow: 0 0 20px rgba(255, 0, 128, 0.8);
+        }
+
+        .trophy {
+            font-size: 3vw;
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 3vh;
+            padding-bottom: 2vh;
+        }
+
+        .control-btn {
+            background: linear-gradient(135deg, #00f5ff, #ff00ff);
+            border: none;
+            color: white;
+            padding: 15px 35px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(0, 245, 255, 0.8);
+        }
+
+        .control-btn.active {
+            background: linear-gradient(135deg, #ff00ff, #00f5ff);
+        }
+
+        .bracket-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2vh;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .bracket-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1.2fr 1fr 1fr;
+            gap: 1.5vw;
+            align-items: center;
+            min-height: 70vh;
+        }
+
+        .round {
+            display: flex;
+            flex-direction: column;
+            gap: 2vh;
+            height: 100%;
+            justify-content: center;
+        }
+
+        .round-title {
+            text-align: center;
+            font-size: 1.3vw;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.2vw;
+            margin-bottom: 1.5vh;
+            background: linear-gradient(90deg, #00f5ff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .matchup {
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid;
+            border-image: linear-gradient(135deg, #00f5ff, #ff00ff, #ffff00) 1;
+            padding: 1.2vh 1vw;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .matchup::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(255, 0, 255, 0.1));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .matchup:hover::before {
+            opacity: 1;
+        }
+
+        .matchup:hover {
+            transform: scale(1.03);
+            box-shadow: 0 0 30px rgba(0, 245, 255, 0.6),
+                        0 0 60px rgba(255, 0, 255, 0.4);
+        }
+
+        .team {
+            padding: 1vh 1vw;
+            margin: 0.4vh 0;
+            background: linear-gradient(90deg, rgba(0, 245, 255, 0.2), rgba(255, 0, 255, 0.2));
+            border-left: 3px solid #00f5ff;
+            font-weight: 700;
+            font-size: 0.95vw;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .team.editable:hover {
+            background: linear-gradient(90deg, rgba(0, 245, 255, 0.4), rgba(255, 0, 255, 0.4));
+            border-left-color: #ff00ff;
+        }
+
+        .team.winner {
+            background: linear-gradient(90deg, rgba(255, 215, 0, 0.3), rgba(255, 255, 0, 0.3));
+            border-left-color: gold;
+            font-weight: 900;
+        }
+
+        .team-name {
+            flex: 1;
+        }
+
+        .edit-icon {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            font-size: 0.85vw;
+            color: #00f5ff;
+        }
+
+        .editable .team:hover .edit-icon {
+            opacity: 1;
+        }
+
+        .vs {
+            text-align: center;
+            color: #ffff00;
+            font-weight: 900;
+            font-size: 1.1vw;
+            margin: 0.6vh 0;
+            text-shadow: 0 0 20px rgba(255, 255, 0, 0.8);
+            letter-spacing: 0.2vw;
+        }
+
+        .final-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5vh;
+            justify-content: center;
+        }
+
+        .final-matchup {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 0, 255, 0.2));
+            border: 3px solid gold;
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.6),
+                        0 0 60px rgba(255, 0, 255, 0.4);
+            animation: pulse-glow 2s ease-in-out infinite;
+            padding: 1.5vh 1.2vw;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { 
+                box-shadow: 0 0 40px rgba(255, 215, 0, 0.6),
+                            0 0 60px rgba(255, 0, 255, 0.4);
+            }
+            50% { 
+                box-shadow: 0 0 60px rgba(255, 215, 0, 0.8),
+                            0 0 80px rgba(255, 0, 255, 0.6);
+            }
+        }
+
+        .final-matchup .team {
+            font-size: 1.15vw;
+            border-left-width: 4px;
+        }
+
+        .champion-section {
+            text-align: center;
+            padding: 2vh 1.2vw;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 0, 255, 0.3));
+            border: 3px solid gold;
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.6);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .champion-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: shine 3s linear infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .champion-title {
+            font-size: 1.9vw;
+            font-weight: 900;
+            background: linear-gradient(90deg, gold, #ffff00, gold);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 0.3vw;
+            position: relative;
+            z-index: 1;
+        }
+
+        .champion-text {
+            margin-top: 0.8vh;
+            font-size: 1.3vw;
+            color: gold;
+            position: relative;
+            z-index: 1;
+            cursor: pointer;
+        }
+
+        .champion-text:hover {
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+        }
+
+        .third-place-section {
+            max-width: 700px;
+            margin: 2vh auto 0;
+            width: 100%;
+        }
+
+        .third-place {
+            opacity: 0.85;
+            padding: 1.2vh 1vw;
+        }
+
+        .third-place .round-title {
+            font-size: 1.3vw;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a0033, #000);
+            border: 3px solid;
+            border-image: linear-gradient(135deg, #00f5ff, #ff00ff) 1;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 50px rgba(0, 245, 255, 0.5);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 900;
+            background: linear-gradient(90deg, #00f5ff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #00f5ff;
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 16px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: #ff00ff;
+            box-shadow: 0 0 20px rgba(255, 0, 255, 0.5);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-btn.save {
+            background: linear-gradient(135deg, #00f5ff, #0080ff);
+            color: white;
+        }
+
+        .modal-btn.cancel {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid #fff;
+        }
+
+        .modal-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .winner-selection {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .winner-option {
+            padding: 15px;
+            background: rgba(0, 245, 255, 0.2);
+            border: 2px solid #00f5ff;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+        }
+
+        .winner-option:hover {
+            background: rgba(0, 245, 255, 0.4);
+            border-color: #ff00ff;
+            transform: translateX(5px);
+        }
+    </style>
+</head>
+<body>
+    <div class="background"></div>
+    <div class="stars"></div>
+
+    <div class="container">
+        <div class="header">
+            <div class="trophy">🏆</div>
+            <h1 class="main-title">CELESTIAL CUP</h1>
+            <div class="subtitle">Knockout Stage</div>
+        </div>
+
+        <div class="bracket-container">
+            <div class="bracket-grid" id="bracketGrid">
+                <!-- Quarter Finals Left -->
+                <div class="round">
+                    <div class="round-title">⚡ Quarter Finals ⚡</div>
+                    
+                    <div class="matchup" data-match="qf1">
+                        <div class="team" data-team="qf1-1"><span class="team-name">Phantom Blaze</span><span class="edit-icon">✏️</span></div>
+                        <div class="vs">VS</div>
+                        <div class="team" data-team="qf1-2"><span class="team-name">Rebelion United</span><span class="edit-icon">✏️</span></div>
+                    </div>
+
+                    <div class="matchup" data-match="qf2">
+                        <div class="team" data-team="qf2-1"><span class="team-name">Tokyo FC</span><span class="edit-icon">✏️</span></div>
+                        <div class="vs">VS</div>
+                        <div class="team" data-team="qf2-2"><span class="team-name">Damascus FC</span><span class="edit-icon">✏️</span></div>
+                    </div>
+                </div>
+
+                <!-- Semi Finals Left -->
+                <div class="round">
+                    <div class="round-title">🔥 Semi Finals 🔥</div>
+                    
+                    <div class="matchup" data-match="sf1">
+                        <div class="team" data-team="sf1-1"><span class="team-name">Winner QF1</span><span class="edit-icon">✏️</span></div>
+                        <div class="vs">VS</div>
+                        <div class="team" data-team="sf1-2"><span class="team-name">Winner QF2</span><span class="edit-icon">✏️</span></div>
+                    </div>
+                </div>
+
+                <!-- Final & Champion -->
+                <div class="final-section">
+                    <div class="matchup final-matchup" data-match="final">
+                        <div class="round-title">⭐ FINAL ⭐</div>
+                        <div class="team" data-team="final-1"><span class="team-name">Winner SF1</span><span class="edit-icon">✏️</span></div>
+                        <div class="vs">VS</div>
+                        <div class="team" data-team="final-2"><span class="team-name">Winner SF2</span><span class="edit-icon">✏️</span></div>
+                    </div>
+
+                    <div class="champion-section">
+                        <div class="champion-title">🌟 CELESTIAL CUP CHAMPION 🌟</div>
+                        <div class="champion-text" id="championText">TO BE DETERMINED</div>
+                    </div>
+                </div>
+
+                <!-- Semi Finals Right -->
+                <div class="round">
+                    <div class="round-title">🔥 Semi Finals 🔥</div>
+                    
+                    <div class="matchup" data-match="sf2">
+                        <div class="team" data-team="sf2-1"><span class="team-name">Winner QF3</span><span class="edit-icon">✏️</span></div>
+                        <div class="vs">VS</div>
+                        <div class="team" data-team="sf2-2"><span class="team-name">Winner QF4</span><span class="edit-icon">✏️</span></div>
+                    </div>
+                </div>
+
+                <!-- Quarter Finals Right -->
+                <div class="round">
+                    <div class="round-title">⚡ Quarter Finals ⚡</div>
+                    
+                    <div class="matchup" data-match="qf3">
+                        <div class="team" data-team="qf3-1"><span class="team-name">Bayern</span><span class="edit-icon">✏️</span></div>
+                        <div class="vs">VS</div>
+                        <div class="team" data-team="qf3-2"><span class="team-name">Obsidian Ravens</span><span class="edit-icon">✏️</span></div>
+                    </div>
+
+                    <div class="matchup" data-match="qf4">
+                        <div class="team" data-team="qf4-1"><span class="team-name">Diamond FC</span><span class="edit-icon">✏️</span></div>
+                        <div class="vs">VS</div>
+                        <div class="team" data-team="qf4-2"><span class="team-name">Arise FC</span><span class="edit-icon">✏️</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Third Place Match - Below main bracket -->
+            <div class="third-place-section">
+                <div class="matchup third-place" data-match="third">
+                    <div class="round-title">🥉 3rd Place Match 🥉</div>
+                    <div class="team" data-team="third-1"><span class="team-name">Loser SF1</span><span class="edit-icon">✏️</span></div>
+                    <div class="vs">VS</div>
+                    <div class="team" data-team="third-2"><span class="team-name">Loser SF2</span><span class="edit-icon">✏️</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls at the bottom -->
+        <div class="controls">
+            <button class="control-btn" id="editModeBtn">✏️ Edit Mode</button>
+            <button class="control-btn" id="resetBtn">🔄 Reset Bracket</button>
+        </div>
+    </div>
+
+    <!-- Modal for password -->
+    <div class="modal" id="passwordModal">
+        <div class="modal-content">
+            <div class="modal-title">Admin Authentication</div>
+            <input type="password" class="modal-input" id="passwordInput" placeholder="Enter admin password">
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" id="cancelPasswordBtn">Cancel</button>
+                <button class="modal-btn save" id="submitPasswordBtn">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for editing -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <div class="modal-title" id="modalTitle">Edit Team</div>
+            <input type="text" class="modal-input" id="teamNameInput" placeholder="Enter team name">
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" id="cancelBtn">Cancel</button>
+                <button class="modal-btn save" id="saveBtn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for winner selection -->
+    <div class="modal" id="winnerModal">
+        <div class="modal-content">
+            <div class="modal-title">Select Winner</div>
+            <div class="winner-selection" id="winnerSelection"></div>
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" id="cancelWinnerBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let editMode = false;
+        let currentTeam = null;
+        let currentMatch = null;
+        let isAuthenticated = false;
+
+        // SET YOUR PASSWORD HERE
+        const ADMIN_PASSWORD = "celestial2024";
+
+        const editModeBtn = document.getElementById('editModeBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const bracketGrid = document.getElementById('bracketGrid');
+        const editModal = document.getElementById('editModal');
+        const winnerModal = document.getElementById('winnerModal');
+        const teamNameInput = document.getElementById('teamNameInput');
+        const saveBtn = document.getElementById('saveBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const cancelWinnerBtn = document.getElementById('cancelWinnerBtn');
+        const championText = document.getElementById('championText');
+        const winnerSelection = document.getElementById('winnerSelection');
+        const passwordModal = document.getElementById('passwordModal');
+        const passwordInput = document.getElementById('passwordInput');
+        const submitPasswordBtn = document.getElementById('submitPasswordBtn');
+        const cancelPasswordBtn = document.getElementById('cancelPasswordBtn');
+
+        let pendingAction = null; // 'edit' or 'reset'
+
+        // Toggle edit mode with password protection
+        editModeBtn.addEventListener('click', () => {
+            if (!editMode && !isAuthenticated) {
+                // Show password modal
+                pendingAction = 'edit';
+                passwordInput.value = '';
+                passwordModal.classList.add('active');
+                passwordInput.focus();
+                return;
+            }
+
+            // Toggle edit mode
+            editMode = !editMode;
+            bracketGrid.classList.toggle('editable', editMode);
+            const thirdPlace = document.querySelector('.third-place-section');
+            if (thirdPlace) {
+                thirdPlace.classList.toggle('editable', editMode);
+            }
+            editModeBtn.classList.toggle('active', editMode);
+            editModeBtn.textContent = editMode ? '✓ Edit Mode Active' : '✏️ Edit Mode';
+
+            // If turning off edit mode, require password again next time
+            if (!editMode) {
+                isAuthenticated = false;
+            }
+        });
+
+        // Submit password
+        submitPasswordBtn.addEventListener('click', () => {
+            const password = passwordInput.value;
+            
+            if (password === ADMIN_PASSWORD) {
+                isAuthenticated = true;
+                passwordModal.classList.remove('active');
+                alert('Authentication successful! Edit mode enabled.');
+                
+                if (pendingAction === 'edit') {
+                    // Enable edit mode
+                    editMode = true;
+                    bracketGrid.classList.add('editable');
+                    const thirdPlace = document.querySelector('.third-place-section');
+                    if (thirdPlace) {
+                        thirdPlace.classList.add('editable');
+                    }
+                    editModeBtn.classList.add('active');
+                    editModeBtn.textContent = '✓ Edit Mode Active';
+                } else if (pendingAction === 'reset') {
+                    // Reset bracket
+                    if (confirm('Are you sure you want to reset the entire bracket?')) {
+                        location.reload();
+                    }
+                }
+                
+                pendingAction = null;
+            } else {
+                alert('Incorrect password! Access denied. Hint: celestial2024');
+                passwordInput.value = '';
+                passwordInput.focus();
+            }
+        });
+
+        // Cancel password
+        cancelPasswordBtn.addEventListener('click', () => {
+            passwordModal.classList.remove('active');
+            pendingAction = null;
+        });
+
+        // Enter key to submit password
+        passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                submitPasswordBtn.click();
+            }
+        });
+
+        // Team click handler
+        document.addEventListener('click', (e) => {
+            const team = e.target.closest('.team');
+            if (!team) return;
+
+            const matchup = team.closest('.matchup');
+            const matchId = matchup?.dataset.match;
+
+            if (editMode) {
+                // Edit team name
+                currentTeam = team;
+                teamNameInput.value = team.querySelector('.team-name').textContent;
+                editModal.classList.add('active');
+            } else if (matchId) {
+                // Select winner
+                currentMatch = matchup;
+                showWinnerSelection(matchup);
+            }
+        });
+
+        // Champion text click handler
+        championText.addEventListener('click', () => {
+            if (editMode) {
+                const newChampion = prompt('Enter champion name:', championText.textContent);
+                if (newChampion) {
+                    championText.textContent = newChampion;
+                }
+            }
+        });
+
+        // Save team name
+        saveBtn.addEventListener('click', () => {
+            if (currentTeam && teamNameInput.value.trim()) {
+                currentTeam.querySelector('.team-name').textContent = teamNameInput.value.trim();
+                editModal.classList.remove('active');
+                currentTeam = null;
+            }
+        });
+
+        // Cancel edit
+        cancelBtn.addEventListener('click', () => {
+            editModal.classList.remove('active');
+            currentTeam = null;
+        });
+
+        // Cancel winner selection
+        cancelWinnerBtn.addEventListener('click', () => {
+            winnerModal.classList.remove('active');
+            currentMatch = null;
+        });
+
+        // Show winner selection
+        function showWinnerSelection(matchup) {
+            const teams = matchup.querySelectorAll('.team');
+            winnerSelection.innerHTML = '';
+
+            teams.forEach((team, index) => {
+                const option = document.createElement('div');
+                option.className = 'winner-option';
+                option.textContent = team.querySelector('.team-name').textContent;
+                option.addEventListener('click', () => {
+                    selectWinner(matchup, index);
+                });
+                winnerSelection.appendChild(option);
+            });
+
+            winnerModal.classList.add('active');
+        }
+
+        // Select winner and progress
+        function selectWinner(matchup, winnerIndex) {
+            const teams = matchup.querySelectorAll('.team');
+            const winnerName = teams[winnerIndex].querySelector('.team-name').textContent;
+            const matchId = matchup.dataset.match;
+
+            // Mark winner
+            teams.forEach((team, i) => {
+                team.classList.toggle('winner', i === winnerIndex);
+            });
+
+            // Progress winner to next round
+            if (matchId.startsWith('qf')) {
+                const qfNum = parseInt(matchId.replace('qf', ''));
+                const sfNum = qfNum <= 2 ? 1 : 2;
+                const sfTeamNum = qfNum % 2 === 1 ? 1 : 2;
+                const nextTeam = document.querySelector(`[data-team="sf${sfNum}-${sfTeamNum}"]`);
+                if (nextTeam) {
+                    nextTeam.querySelector('.team-name').textContent = winnerName;
+                }
+            } else if (matchId.startsWith('sf')) {
+                const sfNum = parseInt(matchId.replace('sf', ''));
+                const nextTeam = document.querySelector(`[data-team="final-${sfNum}"]`);
+                if (nextTeam) {
+                    nextTeam.querySelector('.team-name').textContent = winnerName;
+                }
+            } else if (matchId === 'final') {
+                championText.textContent = winnerName;
+            }
+
+            winnerModal.classList.remove('active');
+            currentMatch = null;
+        }
+
+        // Reset bracket with password protection
+        resetBtn.addEventListener('click', () => {
+            if (!isAuthenticated) {
+                // Show password modal
+                pendingAction = 'reset';
+                passwordInput.value = '';
+                passwordModal.classList.add('active');
+                passwordInput.focus();
+                return;
+            }
+
+            if (confirm('Are you sure you want to reset the entire bracket?')) {
+                location.reload();
+            }
+        });
+
+        // Close modals on background click
+        passwordModal.addEventListener('click', (e) => {
+            if (e.target === passwordModal) {
+                passwordModal.classList.remove('active');
+                pendingAction = null;
+            }
+        });
+
+        editModal.addEventListener('click', (e) => {
+            if (e.target === editModal) {
+                editModal.classList.remove('active');
+            }
+        });
+
+        winnerModal.addEventListener('click', (e) => {
+            if (e.target === winnerModal) {
+                winnerModal.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
